@@ -35,7 +35,8 @@ CELERYBEAT_SCHEDULE = {
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'b9y8@vo&(h@=jsowm2#oji_8xsq+ir)domq5zdpue)7olf7lq2'
+with open('secret_key.txt', 'r') as f:
+    SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
