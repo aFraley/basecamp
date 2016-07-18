@@ -28,6 +28,10 @@ CELERYBEAT_SCHEDULE = {
     'pulse': {
         'task': 'pulse',
         'schedule': crontab(),
+    },
+    'get_recent': {
+        'task': 'get_recent',
+        'schedule': timedelta(minutes=15)
     }
 }
 
@@ -35,13 +39,11 @@ CELERYBEAT_SCHEDULE = {
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-with open('/home/alan/proj/secret_key.txt', 'r') as f:
+with open('/home/alan/srv/basecamp/secret_key.txt', 'r') as f:
     SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -99,8 +101,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'proj',
-        'USER': 'proj',
-        'PASSWORD': 'proj',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '',
     }

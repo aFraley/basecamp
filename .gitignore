@@ -4,3 +4,4 @@ venv/
 *.py[cod]
 secret_key.txt
 twt_auth.json
+proj/celerybeat-schedule

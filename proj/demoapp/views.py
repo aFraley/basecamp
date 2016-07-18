@@ -74,7 +74,7 @@ def charts(request):
     }).values('date', 'count').order_by('-day', '-hour'))
 
     hist = pygal.HorizontalBar()
-    hist.title = 'Tweet Data'
+    hist.title = 'Tweets Histogram for #python'
     for i in range(len(query[:10])):
         hist.add(query[i]['date'].ctime(), int(query[i]['count']))
 
