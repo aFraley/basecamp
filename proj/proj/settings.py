@@ -27,7 +27,7 @@ CELERY_TIMEZONE = 'US/Central'
 CELERYBEAT_SCHEDULE = {
     'pulse': {
         'task': 'pulse',
-        'schedule': timedelta(seconds=30),
+        'schedule': crontab(),
     }
 }
 
@@ -41,7 +41,9 @@ with open('/home/alan/proj/secret_key.txt', 'r') as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+TEMPLATE_DEBUG = True
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -142,6 +144,7 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,

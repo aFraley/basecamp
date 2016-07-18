@@ -17,16 +17,17 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework import routers
 
-from demoapp.views import TweetViewSet, TweetDateViewSet
+from demoapp.views import TweetViewSet, TweetDateViewSet, TweetCountViewSet
 
 
 router = routers.DefaultRouter()
 router.register('tweets', TweetViewSet)
 router.register('tweets_date', TweetDateViewSet)
+router.register('tweets_count', TweetCountViewSet)
 
 
 urlpatterns = [
-    url(r'^test/', include('demoapp.urls')),
+    url(r'^test/', include('demoapp.urls', namespace='demoapp')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))

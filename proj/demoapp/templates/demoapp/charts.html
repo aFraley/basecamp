@@ -1,0 +1,18 @@
+{% extends 'demoapp/base.html'%}
+
+{% block nav %}
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<!-- Charts happen here -->
+<div class="col-lg-12">
+    <embed type="image/svg+xml" src="{{ chart|safe }}"/>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+
+</script>
+{% endblock %}

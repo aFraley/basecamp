@@ -1,54 +1,89 @@
 {% extends 'demoapp/base.html' %}
 
+{% block nav %}
+{{ block.super }}
+{% endblock %}
+
 {% block content %}
 <div class="container">
-    <h1 class="text-center text-primary">Python Hashtag Data</h1>
+    <h1 id="honey" class="text-center text-primary">Python Hashtag Data</h1>
     <br>
 </div>
-<div class="col-xs-12 col-sm-12 col-md-8 col-lg-6">
+<div class="col-xs-12 col-sm-12 col-md-8 col-lg-6 shrink">
     <h1 class="text-center">Testing...</h1>
     <br>
-    <h3>The max and min tweets with #python over the passed seven days.</h3>
-    <p>{{ start.tweet_date__max }}</p>
-    <p>{{ stop.tweet_date__min }}</p>
-    <br>
+    <h3>The most recent and oldest tweets with #python.</h3>
+    <table class="table">
+        <tr>
+            <td>{{ start.tweet_date__max }}</td>
+            <td>{{ stop.tweet_date__min }}</td>
+        </tr>
+    </table>
     <h3>How many days worth of tweets do we have?</h3>
     <p>{{ distance }}</p>
-    <br>
-    <br>
     <h3>How many tweets do we have in general?</h3>
     <p>{{ how_many }}</p>
-    <br>
-    <table class="table">
-        {% for i in count %}
-        <tr>
-            <td>{{ i.date }}</td>
-            <td>{{ i.count }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
-
-<div class="col-xs-12 col-sm-12 col-md-4 col-lg-6">
-    <h1 class="text-center">1, 2...</h1>
-    <br>
-    <h3>First three tweets with a scrubbed date.</h3>
-    {% for tweet in status %}
-    <p>{{ tweet.twt_date }}</p>
-    {% endfor %}
-    <br>
-    <p>{{ cnt }}</p>
-    <br>
-    <h3>Max Tweet id</h3>
+    <h3>Oldest Tweet ID</h3>
     <p>{{ max }}</p>
     <br>
-    <table class="table">
-            {% for i in test %}
+    <div class="chart">
+
+    </div>
+</div>
+
+<div class="col-xs-12 col-sm-12 col-md-4 col-lg-6 shrink">
+    <h1 class="text-center">1, 2...</h1>
+    <br>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 id="twt-cnt" class="text-center">How many Tweets per hour for #python</h3>
+        </div>
+        <table id="cnt-tbl" class="table">
             <tr>
-                <td>{{ i.hour }}</td>
+                <th>Date and Time</th>
+                <th>Count</th>
+            </tr>
+            {% for i in count %}
+            <tr>
+                <td>{{ i.date }}</td>
                 <td>{{ i.count }}</td>
             </tr>
             {% endfor %}
-    </table>
+        </table>
+    </div>
+    <h3 class="text-center">Current Time</h3>
+    <p id="demo" class="text-center"></p>
 </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+
+        // Jquery
+        $(function(){
+           $("#twt-cnt").click(function (){
+              $("#cnt-tbl").toggle("slow");
+           });
+        });
+
+        $(function(){
+           $("#honey").click(function(){
+               $(".shrink").toggle("slow");
+           });
+        });
+
+        // Vanilla js
+        var myVar = setInterval(myTimer, 1000);
+
+        function myTimer() {
+        var d = new Date();
+        document.getElementById("demo").innerHTML = d.toLocaleTimeString();
+        }
+
+        // D3js
+        var body = d3.select(".chart");
+        var div = body.append("p");
+        div.html('{{ hello }}');
+
+    </script>
 {% endblock %}

@@ -3,25 +3,43 @@ from django.db.models import Count
 
 from celery import shared_task
 import tweepy
-from collections import Counter
 from datetime import datetime, timedelta
 import json
 
 from .models import Tweet, TweetSort, TweetCount
 
-CONSUMER_KEY = 'Vp7FVQLSwESvE9oTQruw0TnhW'
-CONSUMER_SECRET = 'miy6EsGklNYxAaVn37vTjAVGwP0c67IOyuY71AAyL1p2Ba4VPN'
-ACCESS_TOKEN = '1952022900-5WAHk6l5d3GllFtqDPaucSpnraIokE6hU7aBxNJ'
-ACCESS_TOKEN_SECRET = 'ekONOf6QxJG6Lq3k2kznfQ16x12BGm909wckYFcP8SlYZ'
+
+with open('/home/alan/proj/twt_auth.json', 'r') as f:
+    auth_data = json.load(f)
+
+app_0 = auth_data[0]['app_0']
+app_1 = auth_data[0]['app_1']
+
+# app-0 auth data
+CONSUMER_KEY = app_0['consumer_key']
+CONSUMER_SECRET = app_0['consumer_secret']
+ACCESS_TOKEN = app_0['access_token']
+ACCESS_TOKEN_SECRET = app_0['access_token_secret']
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
 api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
+# app_1 auth data
+CONSUMER_KEY_1 = app_1['consumer_key']
+CONSUMER_SECRET_1 = app_1['consumer_secret']
+ACCESS_TOKEN_1 = app_1['access_token']
+ACCESS_TOKEN_SECRET_1 = app_1['access_token_secret']
 
-@shared_task(name='count_test')
-def count_test():
+auth_1 = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+auth_1.set_access_token(ACCESS_TOKEN_1, ACCESS_TOKEN_SECRET_1)
+
+api_1 = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+
+
+@shared_task(name='count_tweets')
+def count_tweets():
     counted_tweets = TweetSort.objects.filter(twt_date__lte=datetime.now())\
         .extra({"hour": "date_trunc('hour', twt_date)"}).values(
         "hour").order_by().annotate(count=Count("id"))
@@ -32,26 +50,16 @@ def count_test():
         TweetCount.objects.create(date=row['hour'], count=row['count'])
 
 
-@shared_task(name='count_tweets')
-def count_tweets():
-    scrubbed = TweetSort.objects.values('twt_date')
-    output = scrubbed
-    a_list = [str(row['twt_date']) for row in output]
-    cnt = Counter(a_list)
-
-    for key, value in cnt.items():
-        TweetCount.objects.create(date=key, count=value)
-
-
 @shared_task(name='scrub_tweets')
 def scrub_tweets():
     query = Tweet.objects.values('tweet_date', 'tweet_id').order_by('tweet_date')
 
     scrubbed_tweets = []
     for tweet in query:
-        row = (tweet['tweet_date'].replace(minute=0, second=0, microsecond=0), tweet['tweet_id'])
+        row = (tweet['tweet_date'].replace(minute=0, second=0, microsecond=0) - timedelta(hours=5), tweet['tweet_id'])
         scrubbed_tweets.append(row)
 
+    TweetSort.objects.all().delete()
     for row in scrubbed_tweets:
         TweetSort.objects.create(twt_date=row[0], twt_id=row[1])
 
@@ -101,7 +109,7 @@ def get_tweets():
 
 @shared_task(name='pulse')
 def pulse():
-    # get_tweets.s().apply_async()
-    # clean_tweetdb.s().apply_async()
-    # scrub_tweets.s().apply_async()
+    get_tweets.s().apply_async()
+    clean_tweetdb.s().apply_async()
+    scrub_tweets.s().apply_async()
     count_tweets.s().apply_async()

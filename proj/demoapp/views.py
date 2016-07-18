@@ -2,16 +2,19 @@ from rest_framework import viewsets
 from django.shortcuts import render
 from django.db.models import Count, Max, Min
 from django.utils.timezone import get_current_timezone
+from django.core.serializers.json import DjangoJSONEncoder
 
 from datetime import datetime, timedelta
 from collections import Counter
 import json
+import pygal
 
-from .serializers import TweetSerializer, TweetDateSerializer
+from .serializers import TweetSerializer, TweetDateSerializer, TweetCountSerializer
 from .models import Tweet, TweetSort, TweetCount
 
 
 class TweetViewSet(viewsets.ModelViewSet):
+    """REST viewset for a main db"""
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
 
@@ -21,7 +24,13 @@ class TweetDateViewSet(viewsets.ModelViewSet):
     serializer_class = TweetDateSerializer
 
 
+class TweetCountViewSet(viewsets.ModelViewSet):
+    queryset = TweetCount.objects.all().extra({"day": "date_trunc('day', date)"}).order_by('day')
+    serializer_class = TweetCountSerializer
+
+
 def index(request):
+    """Logic testing for our views"""
     """Test the data."""
     query = Tweet.objects.all()
     start = query.aggregate(Max('tweet_date'))
@@ -35,13 +44,12 @@ def index(request):
 
     twt_max = query.aggregate(Min('tweet_id'))
 
-    jobs = TweetSort.objects.filter(twt_date__lte=datetime.now())\
-        .extra({"hour": "date_trunc('hour', twt_date)"}).values(
-        "hour").order_by('-twt_date').annotate(count=Count("id"))
+    twt_counts = TweetCount.objects.all().extra({
+        'day': "date_trunc('day', date)",
+        'hour': "date_trunc('hour', date)",
+    }).order_by('-day', '-hour')
 
-    print(jobs[0])
-
-    twt_counts = TweetCount.objects.all().extra({"day": "date_trunc('day', date)"}).order_by('day')
+    hello = 'Hell the fuck lo!'
 
     context = {
         'query': query,
@@ -52,7 +60,26 @@ def index(request):
         'how_many': how_many,
         'cnt': cnt,
         'max': twt_max['tweet_id__min'],
-        'test': jobs[:3],
-        'count': twt_counts[:3]
+        'count': twt_counts[:10],
+        'hello': hello,
     }
     return render(request, 'demoapp/test.html', context)
+
+
+def charts(request):
+    """Logic for our charts view"""
+    query = list(TweetCount.objects.filter(date__day=18).extra({
+        "day": "date_trunc('day', date)",
+        "hour": "date_trunc('hour', date)",
+    }).values('date', 'count').order_by('-day', '-hour'))
+
+    hist = pygal.HorizontalBar()
+    hist.title = 'Tweet Data'
+    for i in range(len(query[:10])):
+        hist.add(query[i]['date'].ctime(), int(query[i]['count']))
+
+    context = {
+        'hello': 'Hello!',
+        'chart': hist.render_data_uri(),
+    }
+    return render(request, 'demoapp/charts.html', context)

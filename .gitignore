@@ -3,3 +3,4 @@ venv/
 .idea/
 *.py[cod]
 secret_key.txt
+twt_auth.json

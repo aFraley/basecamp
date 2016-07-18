@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Tweet
+from .models import Tweet, TweetCount
 
 
 class TweetSerializer(serializers.HyperlinkedModelSerializer):
@@ -21,4 +21,13 @@ class TweetDateSerializer(serializers.HyperlinkedModelSerializer):
         model = Tweet
         fields = (
             'tweet_date',
+        )
+
+
+class TweetCountSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = TweetCount
+        fields = (
+            'date',
+            'count',
         )
